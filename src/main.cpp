@@ -12,7 +12,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#include "../secrets.h" // for API_KEY and DATABASE_URL
+#include "../secrets.h" // for API_KEY DATABASE_URL, WIFI_SSID and WIFI_PASSWORD
 
 
 // ==========================================
@@ -29,8 +29,8 @@ unsigned long lastScreenFlash = 0; // 記錄上次螢幕刷新的時間
 // ==========================================
 // 1. WiFi 設定
 // ==========================================
-const char* ssid = "Your wifi or hotspot name";
-const char* password = "Your wifi or hotspot password";
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 
 
 FirebaseData stream;
@@ -231,13 +231,10 @@ void setup() {
   Serial.begin(115200);
   delay(2000);
 
-  // pinMode(3, OUTPUT);
-  // digitalWrite(3, HIGH);
 
   transitink::hardware::configureButtons();
   transitink::hardware::startButtonMonitoring();
 
-  // digitalWrite(3, HIGH); // purpose: try ensure LED is close at start
 
   einkDisplay.begin(false);
   einkDisplay.showWifiStatus("Connecting to WiFi...");
@@ -329,22 +326,7 @@ void loop() {
     }
   }
 
-  
 
-  // 偵測 Enter 按鈕被按下：觸發 LED 閃爍
-  /*
-  if (homePressed && !lastHome) {
-    Serial.println("Enter 按鈕被按下，LED 閃爍回饋！");
-    
-    // 快速閃爍 3 次特效
-    for (int i = 0; i < 3; i++) {
-      digitalWrite(3, LOW);  // 點亮綠燈 (Active LOW)
-      delay(80);             // 短暫停留
-      digitalWrite(3, HIGH); // 熄滅綠燈
-      delay(80);
-    }
-  }
-    */
 
   // 記錄這次的按鈕狀態，供下次迴圈比對
   lastUp = upPressed;

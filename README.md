@@ -1,9 +1,35 @@
-# Introduction
+# TLDR
 This code is modified from TransitInk OS.
 The modified code file are `src/main.cpp`, `src/EInkDisplay.cpp`, and `platformio.ini`
 Added a custom folder `cctv` which contains the code for VLM emergency detection demo, and added the `secrets.h` for API_KEY and DATABASE_URL.
 
+
 Please download the `PlatformIO IDE` vs code extention for this project.
+
+# Introduction
+## Zectrix Note 4: Firebase E-Ink Terminal
+This project transforms a Zectrix Note 4 (ESP32-S3) from a standard transit-display device into a fully unlocked, high-frequency remote text terminal. By replacing the original cloud-locked firmware, this custom OS leverages Firebase Realtime Database to achieve sub-second push updates, bypassing original 1-minute rate limits and NAT/AP-Isolation network restrictions.
+
+## Key Features
+- Real-Time Firebase Streaming: Maintains a persistent WebSocket connection to Firebase Realtime Database for instant text updates.
+
+- Smart UTF-8 Word Wrapping: Custom rendering algorithm intelligently handles mixed CJK (Chinese/Japanese/Korean) and English text. It protects English words from being split across lines while calculating accurate byte-widths for complex characters.
+
+- Hardware Pagination: Text payloads exceeding the screen size are automatically divided into pages. Users can navigate through pages using the physical Up and Down buttons on the device.
+
+
+- Emergency Alert Mode: The system actively monitors incoming text payloads. If the keyword "Mayday" (case-insensitive) is detected, the E-ink display enters an active alarm state, flashing an *** EMERGENCY *** header every 1.5 seconds using the E-ink panel's native inversion refresh, without disrupting the main text body.
+
+## How It Works
+- Network & Auth: On boot, the ESP32-S3 connects to the local Wi-Fi and authenticates anonymously with Firebase.
+
+- Persistent Stream: It opens a continuous stream (beginStream) to a specific Firebase Realtime Database node (e.g., /zectrix/text).
+
+- Data Processing: When a new string is pushed to the database, the stream callback is triggered instantly. The payload is passed through the wrapText() function, which measures character widths and inserts line breaks (\n) without breaking English words.
+
+- Pagination: The formatted text is split into a std::vector<String> array. The renderPage() function calculates the current view, appends a fixed bottom footer (e.g., {Page 1/2}), and pushes the buffer to the Ssd1683DisplayDriver.
+
+- Hardware Loop: The main loop() continuously monitors the internal button drivers (transitink::hardware). Interrupts from the Up/Down buttons modify the currentPage index and trigger a screen re-render. If the emergency flag is active, the loop overrides the render cycle every 1500ms to flash the warning header. The VLM process the video data in a 5 seconds video frame, and update its respond every 5 seconds, which you change to another time by changing the `X_SECONDS` variable in `cctv/cctv_detector.py`.
 
 Please find the original TransitlInk OS README.md below:
 
